@@ -32,9 +32,10 @@ static void motionCeased();
 
 void motionSensorInit()
 {
-    pirOutputSignal.rise(&motionDetected);
-    pirState = OFF;
-    motionSensorActivated = true;
+   pirOutputSignal.rise(&motionDetected);
+   pirOutputSignal.fall(&motionCeased);
+   pirState = OFF;
+   motionSensorActivated = true;
 }
 
 bool motionSensorRead()
@@ -44,36 +45,30 @@ bool motionSensorRead()
 
 void motionSensorActivate()
 {
-    motionSensorActivated = true;
-    if ( !pirState ) {
-        pirOutputSignal.rise(&motionDetected);
-    }
-    pcSerialComStringWrite("The motion sensor has been activated\r\n");
+   motionSensorActivated = true;
+   pirOutputSignal.rise(&motionDetected);
+   pirOutputSignal.fall(&motionCeased);
+   pcSerialComStringWrite("The motion sensor has been activated\r\n");
 }
 
 void motionSensorDeactivate()
 {
-    motionSensorActivated = false;
-    if ( !pirState ) {
-        pirOutputSignal.rise(NULL);
-    }
-    pcSerialComStringWrite("The motion sensor has been deactivated\r\n");
+   motionSensorActivated = false;
+   pirOutputSignal.rise(NULL);
+   pirOutputSignal.fall(NULL);
+   pcSerialComStringWrite("The motion sensor has been deactivated\r\n");
 }
+
 
 //=====[Implementations of private functions]==================================
 
 static void motionDetected()
 {
-    pirState = ON;
-    pirOutputSignal.rise(NULL);
-    pirOutputSignal.fall(&motionCeased);
+   pirState = ON;
 }
+
 
 static void motionCeased()
 {
-    pirState = OFF;
-    pirOutputSignal.fall(NULL);
-    if ( motionSensorActivated ) {
-        pirOutputSignal.rise(&motionDetected);
-    }
+   pirState = OFF;
 }
